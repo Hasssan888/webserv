@@ -9,6 +9,9 @@
 #include <vector>
 #include <map>
 
+#define TIMEOUT 5000
+
+
 struct LocationConfig {
     std::string path;
     std::string uploadStore;

@@ -48,7 +48,7 @@ int main(int ac, char **av) {
             break;
         }
         if (ready == 0)
-            continue
+            continue;
         manager.handlePollEvents();
     }
 
