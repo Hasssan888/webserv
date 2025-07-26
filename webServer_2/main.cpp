@@ -1,6 +1,8 @@
 #include "config/ConfigParser.hpp"
 #include "cor/ServerManager.hpp"
 #include <iostream>
+#include <errno.h>
+#include <cstring>
 
 int main(int ac, char** av) {
     std::string configPath = "conf/default.conf";
@@ -8,11 +10,16 @@ int main(int ac, char** av) {
     if (ac == 2)
         configPath = av[1];
 
+    std::cout << "🔧 Starting webserver..." << std::endl;
+    std::cout << "📁 Using config file: " << configPath << std::endl;
+
     try {
+        std::cout << "📖 Parsing configuration..." << std::endl;
         ConfigParser parser(configPath);
         std::vector<ServerConfig> servers = parser.parse();
 
-        std::cout << "✅ Config loaded successfully!\n";
+        std::cout << "✅ Config loaded successfully!" << std::endl;
+        std::cout << "📊 Found " << servers.size() << " server(s)" << std::endl;
 
         for (size_t i = 0; i < servers.size(); ++i) {
             std::cout << "📡 Server " << i + 1 << ": Listening on " 
@@ -43,11 +50,17 @@ int main(int ac, char** av) {
                 std::cout << "        Autoindex: " << (loc.isAutoindex() ? "on" : "off") << std::endl;
             }
         }
+        
+        std::cout << "🏗️  Creating ServerManager..." << std::endl;
         ServerManager manager(servers);
+        
+        std::cout << "🚀 Starting server manager..." << std::endl;
         manager.run();
 
     } catch (const std::exception& e) {
-        std::cerr << "❌ Error loading config: " << e.what() << std::endl;
+        std::cerr << "❌ Error: " << e.what() << std::endl;
+        std::cerr << "🔍 System error: " << strerror(errno) << std::endl;
+        return 1;
     }
 
     return 0;

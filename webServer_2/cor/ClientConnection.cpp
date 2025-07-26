@@ -1,7 +1,7 @@
 #include "ClientConnection.hpp"
-#include "unistd.h"
+#include <unistd.h>
 
-ClientConnection::ClientConnection(int fd) : _fd(fd) {}
+ClientConnection::ClientConnection(int fd) : _fd(fd), _requestComplete(false), _responseReady(false) {}
 
 ClientConnection::~ClientConnection() {
     if (_fd != -1)
@@ -37,7 +37,6 @@ void ClientConnection::readRequest() {
     }
 }
 
-
 void ClientConnection::sendResponse() {
     if (_writeBuffer.empty())
         return;
@@ -51,13 +50,15 @@ void ClientConnection::sendResponse() {
         close(_fd); // نغلق الاتصال من بعد الرد
 }
 
-
 bool ClientConnection::isDone() const {
     return _requestComplete && _writeBuffer.empty();
 }
 
 bool ClientConnection::isRequestComplete() const {
-    // مؤقتاً نردو دائما صحيحة، نطورها لاحقاً
-    return true;
+    return _requestComplete;  // ✅ Fixed: return actual state instead of always true
 }
 
+// ✅ Added missing method
+bool ClientConnection::isResponseReady() const {
+    return _responseReady;
+}

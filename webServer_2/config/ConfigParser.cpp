@@ -115,8 +115,12 @@ std::vector<ServerConfig> ConfigParser::parse() {
 
                     if (subkey == "methods") {
                         std::string method;
-                        while (iss2 >> method)
-                            loc.addMethod(method);
+                        while (iss2 >> method) {
+                            method = trimSemicolon(method);  // ✅ Remove semicolon from methods
+                            if (!method.empty()) {
+                                loc.addMethod(method);
+                            }
+                        }
                     } else if (subkey == "root") {
                         std::string value;
                         iss2 >> value;

@@ -5,6 +5,7 @@
 #include "ServerSocket.hpp"
 #include "ClientConnection.hpp"
 #include <vector>
+#include <map>  // ✅ Added missing include
 #include <poll.h>
 
 class ServerManager {

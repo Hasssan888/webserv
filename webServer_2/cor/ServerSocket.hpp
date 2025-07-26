@@ -12,6 +12,8 @@ class ServerSocket {
 
     public:
         ServerSocket(const ServerConfig& config);
+        ServerSocket(const ServerSocket& other);  // ✅ Copy constructor
+        ServerSocket& operator=(const ServerSocket& other);  // ✅ Assignment operator
         ~ServerSocket();
 
         int getFd() const;
