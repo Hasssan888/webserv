@@ -32,7 +32,7 @@ void ServerManager::initServers(const std::vector<ServerConfig>& serverConfigs) 
 }
 
 std::vector<struct pollfd>& ServerManager::getPollFDs() const {
-    return _pollfds;
+    return _pollFds;
 }
 
 void ServerManager::handlePollEvents() {
