@@ -9,8 +9,8 @@ SRC = main.cpp \
       cor/ServerManager.cpp \
       cor/ServerSocket.cpp \
       cor/ClientConnection.cpp \
-	  Http/HttpResponse.cpp \
-	  Http/HttpRequest.cpp \
+      Http/HttpResponse.cpp \
+      Http/HttpRequest.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -38,8 +38,14 @@ cor/ServerManager.o: cor/ServerManager.cpp cor/ServerManager.hpp cor/ServerSocke
 cor/ServerSocket.o: cor/ServerSocket.cpp cor/ServerSocket.hpp config/ServerConfig.hpp
 	$(CXX) $(CXXFLAGS) -c cor/ServerSocket.cpp -o cor/ServerSocket.o
 
-cor/ClientConnection.o: cor/ClientConnection.cpp cor/ClientConnection.hpp
+cor/ClientConnection.o: cor/ClientConnection.cpp cor/ClientConnection.hpp Http/HttpRequest.hpp Http/HttpResponse.hpp
 	$(CXX) $(CXXFLAGS) -c cor/ClientConnection.cpp -o cor/ClientConnection.o
+
+Http/HttpRequest.o: Http/HttpRequest.cpp Http/HttpRequest.hpp
+	$(CXX) $(CXXFLAGS) -c Http/HttpRequest.cpp -o Http/HttpRequest.o
+
+Http/HttpResponse.o: Http/HttpResponse.cpp Http/HttpResponse.hpp
+	$(CXX) $(CXXFLAGS) -c Http/HttpResponse.cpp -o Http/HttpResponse.o
 
 clean:
 	rm -f $(OBJ)

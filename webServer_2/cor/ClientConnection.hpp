@@ -15,9 +15,10 @@ private:
     bool _requestComplete;         // واش سالا request
     bool _responseReady;   
     HttpRequest _request;        // واش وجدنا response
-    ServerConfig _serverConfig;
+    const ServerConfig* _serverConfig;  // ✅ Fixed: pointer to avoid copying
+
 public:
-    ClientConnection(int fd);
+    ClientConnection(int fd, const ServerConfig& config);  // ✅ Fixed: pass config
     ~ClientConnection();
 
     int getFd() const;
@@ -26,14 +27,10 @@ public:
     bool isResponseReady() const;
 
     void readRequest();
-    void generateResponse(); // لاحقاً نقدر نمررو ServerConfig etc
+    void generateResponse(); 
     void sendResponse();
 
-    bool isDone() const; // واش نقدر نحيدو من poll
+    bool isDone() const;
 };
-
-
-
-
 
 #endif

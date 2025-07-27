@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <cstdio>
 
-
 ServerManager::ServerManager(const std::vector<ServerConfig>& configs) {
     // ✅ Fixed: Reserve space first to avoid reallocations
     _sockets.reserve(configs.size());
@@ -76,22 +75,23 @@ void ServerManager::run() {
             // Handle events
             if (_pollFds[i].revents & POLLIN) {
                 // Check if this is a server socket (not a client)
-                bool isServerSocket = false;
+                const ServerSocket* serverSocket = NULL;
                 for (size_t j = 0; j < _sockets.size(); ++j) {
                     if (_sockets[j].getFd() == fd) {
-                        isServerSocket = true;
+                        serverSocket = &_sockets[j];
                         break;
                     }
                 }
                 
-                if (isServerSocket) {
+                if (serverSocket) {
                     // New connection on server socket
                     sockaddr_in client_addr;
                     socklen_t addrlen = sizeof(client_addr);
                     int client_fd = accept(fd, (sockaddr*)&client_addr, &addrlen);
                     if (client_fd >= 0) {
                         std::cout << "📥 New client connected: fd " << client_fd << std::endl;
-                        ClientConnection* client = new ClientConnection(client_fd);
+                        // ✅ Fixed: Pass the ServerConfig to ClientConnection
+                        ClientConnection* client = new ClientConnection(client_fd, serverSocket->getConfig());
                         _clients[client_fd] = client;
                         _pollFds.push_back((struct pollfd){ client_fd, POLLIN, 0 });
                     } else {
