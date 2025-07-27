@@ -1,5 +1,10 @@
 #include "ClientConnection.hpp"
 #include <unistd.h>
+#include "../Http/HttpRequest.hpp"
+#include "../Http/HttpResponse.hpp"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 ClientConnection::ClientConnection(int fd) : _fd(fd), _requestComplete(false), _responseReady(false) {}
 
@@ -13,14 +18,104 @@ int ClientConnection::getFd() const {
 }
 
 void ClientConnection::generateResponse() {
-    _writeBuffer = 
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 13\r\n"
-        "\r\n"
-        "Hello, world!";
+    std::cout << "[DEBUG] Parsing request..." << std::endl;
+    if (!_request.parse(_readBuffer)) {
+        std::cout << "[DEBUG] Failed to parse request -> 400 Bad Request" << std::endl;
+        HttpResponse response;
+        response.setStatusCode(400);
+        response.setHeader("Content-Type", "text/plain");
+        response.setBody("400 Bad Request");
+        _writeBuffer = response.toString();
+        _responseReady = true;
+        return;
+    }
+
+    std::string uri = _request.getUri();
+    std::string method = _request.getMethod();
+
+    std::cout << "[DEBUG] Request URI: " << uri << std::endl;
+    std::cout << "[DEBUG] Request Method: " << method << std::endl;
+
+    // البحث على location المناسبة
+    const std::map<std::string, LocationConfig>& locations = _serverConfig.getLocations();
+    const LocationConfig* matchedLocation = NULL;
+    size_t longestMatch = 0;
+
+    for (std::map<std::string, LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+        const std::string& path = it->first;
+        if (uri.find(path) == 0 && path.length() > longestMatch) {
+            matchedLocation = &it->second;
+            longestMatch = path.length();
+        }
+    }
+
+    if (!matchedLocation) {
+        std::cout << "[DEBUG] No matching location found -> 404 Not Found" << std::endl;
+        HttpResponse response;
+        response.setStatusCode(404);
+        response.setHeader("Content-Type", "text/plain");
+        response.setBody("404 Not Found");
+        _writeBuffer = response.toString();
+        _responseReady = true;
+        return;
+    }
+
+    std::cout << "[DEBUG] Matched location root: " << matchedLocation->getRoot() << std::endl;
+
+    // التحقق من صلاحية الطريقة
+    if (matchedLocation->getAllowedMethods().find(method) == 
+            matchedLocation->getAllowedMethods().end())  {
+        HttpResponse response;
+        response.setStatusCode(405);
+        response.setHeader("Content-Type", "text/plain");
+        response.setBody("405 Method Not Allowed");
+        _writeBuffer = response.toString();
+        _responseReady = true;
+        return;
+    }
+
+    // بناء المسار الكامل
+    std::string root = matchedLocation->getRoot();
+    std::string filePath = root + uri.substr(longestMatch);
+
+    if (!filePath.empty() && filePath[filePath.size() - 1] == '/')
+        filePath += _serverConfig.getIndex();
+
+    std::cout << "[DEBUG] Full file path: " << filePath << std::endl;
+
+    HttpResponse response;
+
+    if (method == "GET") {
+        std::ifstream file(filePath.c_str());
+        if (file) {
+            std::stringstream ss;
+            ss << file.rdbuf();
+            response.setStatusCode(200);
+            response.setHeader("Content-Type", "text/html"); // ممكن تحسنها حسب الامتداد
+            response.setBody(ss.str());
+            std::cout << "[DEBUG] GET: File found, sending 200 OK" << std::endl;
+        } else {
+            response.setStatusCode(404);
+            response.setHeader("Content-Type", "text/plain");
+            response.setBody("404 Not Found");
+            std::cout << "[DEBUG] GET: File not found -> 404 Not Found" << std::endl;
+        }
+    }
+    // تقدر تزيد دعم POST, DELETE, PUT هنا
+
+    else {
+        response.setStatusCode(501);
+        response.setHeader("Content-Type", "text/plain");
+        response.setBody("501 Not Implemented");
+        std::cout << "[DEBUG] Method " << method << " not implemented -> 501 Not Implemented" << std::endl;
+    }
+
+    _writeBuffer = response.toString();
     _responseReady = true;
 }
+
+
+
 
 void ClientConnection::readRequest() {
     char buffer[1024];
@@ -34,6 +129,14 @@ void ClientConnection::readRequest() {
 
     if (_readBuffer.find("\r\n\r\n") != std::string::npos) {
         _requestComplete = true; // نهاية الهيدر
+        
+        // analyes request
+        if (_request.parse(_readBuffer)) {
+            std::cout << "Method: " << _request.getMethod() << std::endl;
+            std::cout << "URI: " << _request.getUri() << std::endl;
+        } else {
+            std::cerr << "Failed to parse HTTP request" << std::endl;
+        }
     }
 }
 

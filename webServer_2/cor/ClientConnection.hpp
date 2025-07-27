@@ -4,6 +4,8 @@
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "../Http/HttpRequest.hpp"
+#include "../config/ServerConfig.hpp"
 
 class ClientConnection {
 private:
@@ -11,7 +13,9 @@ private:
     std::string _readBuffer;       // باش نجمع request لي جا من client
     std::string _writeBuffer;      // الرد لي غادي نسيفطو
     bool _requestComplete;         // واش سالا request
-    bool _responseReady;           // واش وجدنا response
+    bool _responseReady;   
+    HttpRequest _request;        // واش وجدنا response
+    ServerConfig _serverConfig;
 public:
     ClientConnection(int fd);
     ~ClientConnection();

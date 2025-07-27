@@ -8,7 +8,9 @@ SRC = main.cpp \
       config/LocationConfig.cpp \
       cor/ServerManager.cpp \
       cor/ServerSocket.cpp \
-      cor/ClientConnection.cpp
+      cor/ClientConnection.cpp \
+	  Http/HttpResponse.cpp \
+	  Http/HttpRequest.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 
