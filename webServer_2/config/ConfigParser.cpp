@@ -137,10 +137,19 @@ std::vector<ServerConfig> ConfigParser::parse() {
                         value = trimSemicolon(value);
                         loc.setIndex(value);
                     } else if (subkey == "cgi_extension") {
+                        
                         std::string value;
                         iss2 >> value;
+                        std::cout << "************ cgi_extension: " << value << " *********"<< std::endl;
                         value = trimSemicolon(value);
                         loc.setCgiExtension(value);
+                    } else if (subkey == "cgi_pass"){
+                        
+                        std::string value;
+                        iss2 >> value;
+                        std::cout << "************ cgi_pass: " << value << " *********"<< std::endl;
+                        value = trimSemicolon(value);
+                        loc.setCgiPass(value);
                     } else if (subkey == "autoindex") {
                         std::string value;
                         iss2 >> value;
@@ -149,7 +158,16 @@ std::vector<ServerConfig> ConfigParser::parse() {
                     } else {
                         std::cerr << "⚠️ Unknown location directive: " << subkey << std::endl;
                     }
+                
                 }
+                if (loc.hasCgiExt() && loc.hasCgiPass()) {
+                    loc.setCgiHandlers(loc.getCgiExtension(), loc.getCgiPass());
+                }
+                    std::cout << "📂 CGI Handlers for location " << loc.getPath() << ":\n";
+                    const std::map<std::string, std::string>& cgiMap = loc.getCgiHandlers();
+                    for (std::map<std::string, std::string>::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
+                        std::cout << "   [ " << it->first << " ] => [ " << it->second << " ]\n";
+                    }
 
                 currentServer.addLocation(loc);
             } else {
@@ -159,9 +177,10 @@ std::vector<ServerConfig> ConfigParser::parse() {
             std::cerr << "⚠️ Warning: Ignoring line outside server block: " << line << std::endl;
         }
     }
-
+    
     if (inServerBlock)
-        throw std::runtime_error("Unclosed server block");
-
+    throw std::runtime_error("Unclosed server block");
+    
+    
     return servers;
 }

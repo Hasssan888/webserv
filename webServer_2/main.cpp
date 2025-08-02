@@ -47,7 +47,13 @@ int main(int ac, char** av) {
 
                 std::cout << "        Upload Store: " << loc.getUploadStore() << std::endl;
                 std::cout << "        CGI Extension: " << loc.getCgiExtension() << std::endl;
+                std::cout << "        CGI Pass: " << loc.getCgiPass() << std::endl;
                 std::cout << "        Autoindex: " << (loc.isAutoindex() ? "on" : "off") << std::endl;
+                std::map<std::string, std::string> CgiHandl = loc.getCgiHandlers();
+                std::map<std::string, std::string>::iterator  ito;
+                for (ito = CgiHandl.begin(); ito != CgiHandl.end(); ito++){
+                    std::cout << "        CgiHnadlers[" << ito->first << "]: " << ito->second << std::endl;
+                }
             }
         }
         

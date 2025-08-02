@@ -85,6 +85,7 @@ void ServerManager::run() {
                 
                 if (serverSocket) {
                     // New connection on server socket
+                    std::cout << "📞 New client trying to connect..." << std::endl;                    
                     sockaddr_in client_addr;
                     socklen_t addrlen = sizeof(client_addr);
                     int client_fd = accept(fd, (sockaddr*)&client_addr, &addrlen);
@@ -99,10 +100,12 @@ void ServerManager::run() {
                     }
                 } else {
                     // Existing client readable
+                    std::cout << "📨 Data received from existing client fd: " << fd << std::endl;
                     if (_clients.find(fd) != _clients.end()) {
                         ClientConnection* client = _clients[fd];
                         client->readRequest();
                         if (client->isRequestComplete()) {
+                            std::cout << "🛠️ Generating response for client fd: " << fd << std::endl;
                             client->generateResponse();
                             _pollFds[i].events = POLLOUT; // switch to write mode
                         }
@@ -112,6 +115,7 @@ void ServerManager::run() {
             } else if (_pollFds[i].revents & POLLOUT) {
                 // Client socket ready for writing
                 if (_clients.find(fd) != _clients.end()) {
+                    std::cout << "📤 Sending response to client " << fd << std::endl;
                     ClientConnection* client = _clients[fd];
                     client->sendResponse();
 
