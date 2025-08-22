@@ -128,3 +128,4 @@ void ServerSocket::setup() {
     std::cout << "🎧 Successfully listening on " << _config.getHost() << ":" << _config.getPort() << std::endl;
     std::cout << "📡 Server socket ready with fd: " << _fd << std::endl;
 }
+

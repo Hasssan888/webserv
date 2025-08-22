@@ -1,3 +1,16 @@
+#!/bin/bash
+
+echo "🔧 Setting up webserv test environment..."
+
+# Create necessary directories
+mkdir -p www
+mkdir -p www/videos
+mkdir -p www/uploads
+mkdir -p www/admin
+mkdir -p CGI
+
+# Create main index.html
+cat > www/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -165,3 +178,94 @@
     </script>
 </body>
 </html>
+EOF
+
+# Create test files in videos directory
+cat > www/videos/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Videos Directory</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .back-link { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📹 Videos Directory</h1>
+        <p>This is the videos section. Directory listing should be enabled here.</p>
+        <p>You can upload video files to this directory and they will be listed automatically.</p>
+        <p><a href="/" class="back-link">← Back to home</a></p>
+    </div>
+</body>
+</html>
+EOF
+
+# Create sample video file
+echo "This is a sample video file for testing." > www/videos/sample.txt
+
+# Create admin directory with index
+cat > www/admin/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Area</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #e3f2fd; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .warning { background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0; }
+        .back-link { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Admin Area</h1>
+        <div class="warning">
+            <strong>⚠️ Restricted Area</strong><br>
+            This area supports all HTTP methods: GET, POST, DELETE, PUT
+        </div>
+        <p>Admin functions and CGI scripts can be placed here.</p>
+        <p>CGI extension is configured for .php files in this location.</p>
+        <p><a href="/" class="back-link">← Back to home</a></p>
+    </div>
+</body>
+</html>
+EOF
+
+# Create uploads directory with index
+cat > www/uploads/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Directory</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #e8f5e8; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .back-link { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 Upload Directory</h1>
+        <p>Files uploaded through the POST method will appear here.</p>
+        <p>Directory listing is enabled to show uploaded files.</p>
+        <p><a href="/" class="back-link">← Back to home</a></p>
+    </div>
+</body>
+</html>
+EOF
+
+# Create a simple test file for deletion testing
+echo "This file can be deleted using the DELETE method." > www/test-delete.txt
+
+# Set permissions
+chmod -R 755 www
+chmod +x setup.sh
+
+echo "✅ Test environment setup complete!"
+echo "📁 Created directories: www, www/videos, www/uploads, www/admin"
+echo "📄 Created test files and index pages"
+echo "🚀 You can now run: make && ./webserv"
+echo "🌐 Then open http://localhost:9090 in your browser"
